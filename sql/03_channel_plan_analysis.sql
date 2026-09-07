@@ -1,0 +1,5 @@
+SELECT * FROM vw_channel_m6_retention ORDER BY m6_retention DESC;
+SELECT * FROM vw_plan_m6_retention ORDER BY m6_retention DESC;
+
+-- Channel x plan M6 retention
+WITH mature AS (SELECT DISTINCT cohort_month FROM customer_monthly_activity WHERE date(cohort_month,'+6 months')<='2025-12-01'),base AS (SELECT DISTINCT a.account_id,a.acquisition_channel,p.plan_name,date(a.created_at,'start of month') cohort_month FROM accounts a JOIN subscriptions s ON a.account_id=s.account_id JOIN plans p ON s.plan_id=p.plan_id JOIN mature m ON date(a.created_at,'start of month')=m.cohort_month),m6 AS (SELECT DISTINCT account_id FROM customer_monthly_activity WHERE months_since_cohort=6) SELECT b.acquisition_channel,b.plan_name,COUNT(*) customers,SUM(CASE WHEN m.account_id IS NOT NULL THEN 1 ELSE 0 END) retained_m6,ROUND(100.0*SUM(CASE WHEN m.account_id IS NOT NULL THEN 1 ELSE 0 END)/COUNT(*),2) m6_retention_pct FROM base b LEFT JOIN m6 m USING(account_id) GROUP BY b.acquisition_channel,b.plan_name ORDER BY m6_retention_pct DESC;

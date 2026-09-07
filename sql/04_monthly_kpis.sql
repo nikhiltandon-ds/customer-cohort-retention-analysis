@@ -1,0 +1,1 @@
+SELECT snapshot_month month,COUNT(DISTINCT account_id) active_customers,COUNT(DISTINCT CASE WHEN is_cohort_month=1 THEN account_id END) new_customers,ROUND(SUM(mrr),2) active_mrr FROM customer_monthly_activity GROUP BY snapshot_month ORDER BY snapshot_month;
